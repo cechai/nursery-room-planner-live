@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nursery Planner</title>
+<!-- deploy-check -->
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{font-family:'Segoe UI',system-ui,sans-serif;display:flex;height:100vh;background:#e8ecf1;overflow:hidden}
+
+#sidebar{width:300px;min-width:300px;background:#fff;overflow-y:auto;box-shadow:2px 0 12px rgba(0,0,0,.08);z-index:50;display:flex;flex-direction:column}
+
+.side-header{padding:12px 16px;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff}
+
+.side-header h2{font-size:15px;margin-bottom:2px}
+
+.side-header p{font-size:10px;opacity:.7}
+
+.ss{padding:10px 14px;border-bottom:1px solid #eee}
+
+.ss:last-child{border:none}
+
+.ss h3{font-size:10px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px;font-weight:700}
+
+.room-tabs{display:flex;gap:4px;flex-wrap:wrap}
+
+.room-tab{padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #ddd;background:#f7f8fa;color:#555}
+
+.room-tab.active{background:#4A90D9;color:#fff;border-color:#357ABD}
+
+.preset-btn{display:block;width:100%;padding:6px 10px;margin:3px 0;background:#f7f8fa;border:1px solid #e0e3e8;border-radius:5px;cursor:pointer;text-align:left;font-size:11px;transition:all .15s}
+
+.preset-btn:hover{background:#edf2f7}
+
+.preset-btn .dims{color:#999;font-size:10px;margin-left:4px}
+
+.preset-btn .cdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+.brand-label{font-size:9px;font-weight:700;color:#555;margin:6px 0 2px;text-transform:uppercase;letter-spacing:.5px}
+
+.set-btn{display:block;width:100%;padding:8px;margin:3px 0;border:2px solid;border-radius:6px;cursor:pointer;text-align:center;font-size:11px;font-weight:700;background:#fff;transition:all .15s}
+
+.set-btn.bonjibou{border-color:#27AE60;color:#27AE60}
+
+.set-btn.bonjibou:hover{background:#27AE60;color:#fff}
+
+.set-btn.stokke{border-color:#8E44AD;color:#8E44AD}
+
+.set-btn.stokke:hover{background:#8E44AD;color:#fff}
+
+input{width:100%;padding:6px 8px;margin:2px 0;border:1px solid #ddd;border-radius:4px;font-size:11px;outline:none}
+
+input:focus{border-color:#4A90D9}
+
+button{padding:6px 12px;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s}
+
+.btn-primary{background:#4A90D9;color:#fff}
+
+.btn-danger{background:#E74C3C;color:#fff;font-size:10px;padding:4px 8px}
+
+.btn-secondary{background:#f0f0f0;color:#555}
+
+.btn-toggle{background:#f0f0f0;padding:6px 10px;width:100%;text-align:center;font-weight:600;border-radius:5px;font-size:11px}
+
+.btn-toggle.active{background:#27AE60;color:#fff}
+
+.btn-compare{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;width:100%;padding:8px;font-size:12px;border-radius:6px;margin:3px 0}
+
+.btn-share{background:#1a1a2e;color:#fff;width:100%;padding:8px;font-size:12px;border-radius:6px;margin:3px 0}
+
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+#layout-tabs{display:flex;align-items:center;padding:6px 12px;background:#fff;border-bottom:1px solid #e0e3e8;gap:4px;flex-shrink:0}
+
+.ltab{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;background:#f0f0f0;color:#555}
+
+.ltab.active{background:#4A90D9;color:#fff}
+
+.ltab-add{background:none;border:1px dashed #ccc;color:#999;padding:4px 8px;font-size:11px}
+
+.ltab-close{font-size:13px;opacity:.5;margin-left:3px;cursor:pointer}
+
+.ltab-close:hover{opacity:1}
+
+#room-area{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;gap:20px;flex-wrap:wrap}
+
+.room-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+
+.room-col .room-title{font-size:13px;font-weight:700;color:#333}
+
+.room{position:relative;border:3px solid #2c3e50;background:repeating-linear-gradient(90deg,#F8F1E8 0px,#F8F1E8 24px,#F2EADF 24px,#F2EADF 26px)}
+
+.fixed-item{position:absolute;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden}
+
+.fi-label{font-size:9px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3);text-align:center;line-height:1.1;z-index:2;position:relative}
+
+.furniture{position:absolute;display:flex;align-items:center;justify-content:center;cursor:grab;border:2px solid transparent;user-select:none;z-index:10;transition:border-color .15s,box-shadow .15s;overflow:hidden}
+
+.furniture:hover{box-shadow:0 2px 8px rgba(0,0,0,.2)}
+
+.furniture.selected{border-color:#1a1a2e;box-shadow:0 0 0 2px rgba(74,144,217,.5)}
+
+.furniture.overlapping{border-color:#E74C3C!important;box-shadow:0 0 0 2px rgba(231,76,60,.4)!important;background-color:rgba(231,76,60,.08)!important}
+
+.furniture.dragging{cursor:grabbing;opacity:.85;z-index:100}
+
+.furn-label{text-align:center;line-height:1.1;padding:2px;word-break:break-word;max-width:100%;overflow:hidden;z-index:2;position:relative}
+
+.overlay-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:20}
+
+#furniture-list{display:flex;flex-direction:column;gap:2px;max-height:120px;overflow-y:auto}
+
+.flist-item{display:flex;align-items:center;padding:4px 6px;background:#f7f8fa;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid transparent}
+
+.flist-item.active{background:#dbeafe;border-color:#93c5fd}
+
+.flist-dot{width:8px;height:8px;border-radius:50%;margin-right:5px;flex-shrink:0}
+
+.flist-item .fname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.flist-item .fdims{color:#999;font-size:9px;margin-left:3px}
+
+.controls-row{display:flex;gap:4px;margin-top:4px}
+
+.controls-row button{flex:1}
+
+.fit-panel{background:#f8f9fa;border-radius:6px;padding:8px;margin-top:4px}
+
+.fit-row{display:flex;align-items:center;gap:4px;font-size:10px;padding:2px 0;color:#555}
+
+.fit-verdict{padding:6px;border-radius:5px;text-align:center;font-weight:700;font-size:11px;margin-top:4px}
+
+.fit-verdict.good{background:#d4edda;color:#155724}
+
+.fit-verdict.warn{background:#fff3cd;color:#856404}
+
+.fit-verdict.bad{background:#f8d7da;color:#721c24}
+
+.compare-verdict{text-align:center;font-size:11px;padding:6px;border-radius:5px;margin-top:4px}
+
+.scale-bar{display:flex;align-items:center;gap:4px;font-size:9px;color:#888;margin-top:3px}
+
+.scale-line{height:2px;background:#888;position:relative}
+
+.scale-line::before,.scale-line::after{content:'';position:absolute;width:1px;height:5px;background:#888;top:-1.5px}
+
+.scale-line::before{left:0}.scale-line::after{right:0}
+
+.kbd{display:inline-block;padding:0 3px;background:#f0f0f0;border:1px solid #ddd;border-radius:2px;font-size:8px;font-family:monospace}
+
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:8px 20px;border-radius:6px;font-size:12px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+
+.toast.show{opacity:1}
+
+.edit-toggle{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#f0f0f0;border-radius:5px;cursor:pointer;border:1px solid #ddd;width:100%;justify-content:center;font-size:11px;font-weight:600;transition:all .15s}
+
+.edit-toggle.editing{background:#E74C3C;color:#fff;border-color:#C0392B}
+
+.edit-toggle .toggle-icon{font-size:14px}
+
+#menu-btn{display:none}
+
+#sidebar-overlay{display:none}
+
+#mobile-bar{display:none}
+
+
+
+@media(max-width:768px){
+
+   body{flex-direction:column}
+
+   #sidebar{position:fixed;left:-320px;top:0;bottom:0;width:300px;min-width:0;z-index:200;transition:left .25s ease;overflow-y:auto}
+
+   #sidebar.open{left:0}
+
+   #sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
+
+   #sidebar-overlay.show{display:block}
+
+   #menu-btn{display:flex;align-items:center;justify-content:center;position:fixed;top:8px;left:8px;z-index:100;width:40px;height:40px;border-radius:10px;background:#1a1a2e;color:#fff;font-size:20px;border:none;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
+
+   #main{width:100%;height:100vh}
+
+   #layout-tabs{padding:6px 56px 6px 56px;overflow-x:auto;flex-wrap:nowrap}
+
+   #room-area{padding:8px;align-items:flex-start}
+
+   #mobile-bar{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:6px 8px;gap:6px;z-index:90;justify-content:space-around;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+
+   #mobile-bar button{flex:1;padding:10px 4px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:#f0f0f0;color:#555}
+
+   #mobile-bar button.accent{background:#4A90D9;color:#fff}
+
+   #mobile-bar button.danger{background:#E74C3C;color:#fff}
+
+   .room-col{padding-bottom:60px}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="sidebar">
+
+<div class="side-header"><h2>Nursery Planner</h2><p>Plan rooms &amp; furniture layouts</p></div>
+
+
+
+<div class="ss">
+
+<h3>Room</h3>
+
+<div class="room-tabs" id="room-tabs"></div>
+
+</div>
+
+
+
+<div class="ss">
+
+<h3>Saved Furniture <button class="edit-toggle" id="editToggle" onclick="toggleEditMode()" style="display:inline-block;width:auto;padding:2px 8px;font-size:9px;margin-left:6px;vertical-align:middle"><span class="toggle-icon">✏️</span> <span id="editLabel">Edit</span></button></h3>
+
+<div id="saved-furniture-list" style="display:flex;flex-direction:column;gap:2px;max-height:200px;overflow-y:auto"></div>
+
+</div>
+
+
+
+<div class="ss">
+
+<h3>Add Furniture</h3>
+
+<div class="brand-label">Boori</div>
+
+<button class="preset-btn" onclick="addPreset(5)"><span class="cdot" style="background:#C4A882"></span>Oval Cot <span class="dims">70×125</span></button>
+
+<div class="brand-label">Other</div>
+
+<button class="preset-btn" onclick="addPreset(4)"><span class="cdot" style="background:#6B7B8D"></span>Sofa Bed <span class="dims">103×150</span></button>
+
+<div class="brand-label" style="margin-top:6px">Custom</div>
+
+<input type="text" id="fname" placeholder="Name">
+
+<div style="display:flex;gap:4px"><input type="number" id="fwidth" placeholder="W cm" min="1"><input type="number" id="flength" placeholder="L cm" min="1"></div>
+
+<button class="btn-primary" style="width:100%;margin-top:4px" onclick="addCustom()">Add</button>
+
+</div>
+
+
+
+<div class="ss">
+
+<h3>Placed</h3>
+
+<div id="furniture-list"></div>
+
+<div class="controls-row"><button class="btn-secondary" onclick="rotateSelected()">↻ Rotate</button><button class="btn-danger" onclick="deleteSelected()">✕ Delete</button></div>
+
+</div>
+
+
+
+<div class="ss">
+
+<h3>Fit Analysis</h3>
+
+<div id="fit-panel" class="fit-panel"><div style="color:#bbb;font-size:10px">Add furniture to see analysis</div></div>
+
+</div>
+
+
+
+<div class="ss">
+
+<h3>Tools</h3>
+
+<button class="btn-toggle" id="measureBtn" onclick="toggleMeasure()">📏 Measurements</button>
+
+<button class="btn-toggle" id="rulerBtn" onclick="toggleRuler()" style="margin-top:3px">📐 Ruler</button>
+
+<button class="btn-share" onclick="shareLayouts()" style="margin-top:6px">🔗 Copy Share Link</button>
+
+</div>
+
+
+
+<div class="ss" style="border:none"><div style="font-size:9px;color:#bbb;line-height:1.5"><span class="kbd">Ctrl+Z</span> Undo <span class="kbd">Ctrl+Shift+Z</span> Redo<br><span class="kbd">R</span> Rotate <span class="kbd">Del</span> Delete <span class="kbd">M</span> Measure <span class="kbd">↑↓←→</span> Nudge</div></div>
+
+</div>
+
+
+
+<button id="menu-btn" onclick="toggleSidebar()">☰</button>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+
+
+<div id="main">
+
+<div id="layout-tabs"></div>
+
+<div id="room-area"></div>
+
+</div>
+
+
+
+<div id="mobile-bar">
+
+<button class="accent" onclick="toggleSidebar()">+ Add</button>
+
+<button onclick="rotateSelected()">↻ Rotate</button>
+
+<button onclick="toggleMeasure()">📏</button>
+
+<button class="danger" onclick="deleteSelected()">✕ Del</button>
+
+<button onclick="shareLayouts()">🔗</button>
+
+</div>
+
+
+
+<div class="toast" id="toast"></div>
+
+
+
+<script>
+
+// ===== ROOM DEFINITIONS =====
+
+// Door format: {hx,hy,ex,ey,ax,ay,label}
+
+//   hx,hy = hinge point, ex,ey = closed end of door, ax,ay = arc end (where door swings to)
+
+//   label = optional text label
+
+//   If ax,ay are omitted, door is indicator-only (no arc)
+
+const ROOMS = {
+
+   bed1: {
+
+     // Room: 411 wide x 320 tall (reduced by 6px for 3px border on each side)
+
+     // Horizontal: cupv(61) + 85gap + bed(150) + 115gap = 411
+
+     // Vertical: nightstand(40) + 220gap + cuph/table(60) = 320
+
+     //           bed(200) + 60gap + table(60) = 320
+
+     name:'Bed 1', w:405, h:314,
+
+     fixed:[
+
+       {id:'bed',type:'bed',label:'Bed',x:146,y:3,w:150,h:200},
+
+       {id:'nsl',type:'nightstand',label:'',x:108,y:3,w:38,h:40},
+
+       {id:'nsr',type:'nightstand',label:'',x:296,y:3,w:38,h:40},
+
+       {id:'cupv',type:'cupboard',label:'',x:3,y:83,w:61,h:177},
+
+       {id:'cuph',type:'cupboard',label:'Cupboard',x:3,y:254,w:133,h:60},
+
+       {id:'table',type:'table',label:'Table',x:133,y:254,w:240,h:60},
+
+     ],
+
+     doors:[
+
+       // Left door: hinge at (7,3), handle at (90,3), swings inward to (7,83)
+
+       {hx:7,hy:3,ex:90,ey:3,ax:7,ay:83},
+
+       // Right door: indicator only (swings outward)
+
+       {hx:337,hy:3,ex:401,ey:3,label:'Door'},
+
+     ]
+
+   },
+
+   living: {
+
+     name:'Living Room', w:362, h:312,
+
+     fixed:[
+
+       {id:'pillar',type:'pillar',label:'',x:326,y:3,w:33,h:9},
+
+     ],
+
+     doors:[
+
+       // Left wall door: entrance marker only (door swings outward)
+
+       {hx:3,hy:238,ex:3,ey:312,label:'Door'},
+
+       // Right wall door: entrance marker only (door swings outward)
+
+       {hx:362,hy:221,ex:362,ey:286,label:'Door'},
+
+     ]
+
+   }
+
+};
+
+
+
+const PRESETS=[
+
+   {name:'Bonbijou Round',w:65,h:65,color:'#27AE60',shape:'circle'},
+
+   {name:'Bonbijou Cot',w:125,h:65,color:'#2ECC71',shape:'oval'},
+
+   {name:'Stokke V3 Cot',w:141,h:74,color:'#8E44AD',shape:'oval'},
+
+   {name:'Stokke V3 Round',w:82,h:67,color:'#9B59B6',shape:'oval'},
+
+   {name:'Sofa Bed',w:103,h:150,color:'#6B7B8D',shape:'rect'},
+
+   {name:'Boori Oval Cot',w:70,h:125,color:'#C4A882',shape:'stadium'},
+
+];
+
+const CUSTOM_COLORS=['#E67E22','#1ABC9C','#3498DB','#E91E63','#FF9800','#00BCD4','#795548','#607D8B'];
+
+let colorIdx=0;
+
+
+
+// ===== STATE =====
+
+let state={};
+
+const INITIAL_FURNITURE={
+  living:[
+    {id:1,name:'High Cabinet',w:51,h:148,x:3,y:50,color:'#8B7355'},
+    {id:2,name:'Round Table',w:45,h:45,x:6,y:198,color:'#C4A882'},
+    {id:3,name:'Low Cabinet',w:40,h:182,x:319,y:32,color:'#8B7355'},
+  ]
+};
+
+Object.keys(ROOMS).forEach(k=>{
+  const init=INITIAL_FURNITURE[k]||[];
+  state[k]={layouts:[{name:'Layout 1',furniture:JSON.parse(JSON.stringify(init)),nextId:init.length+1}],curLayout:0};
+});
+
+let activeRoom='bed1';
+
+let selectedId=null;
+
+let compareMode=false,compareIdx=-1;
+
+let showMeasure=false;
+
+let dragging=null,dragOff={x:0,y:0},activeContainer=null,activeScale=2;
+
+let rulerMode=false,rulerStart=null,rulerEnd=null,rulerActive=false;
+let editMode=false;
+let savedFurniture=[]; // persistent furniture catalog
+
+const MIN_WALKWAY=45;
+
+
+// ===== LOCALSTORAGE PERSISTENCE =====
+const STORAGE_KEY='nurseryPlannerState';
+
+function saveToStorage(){
+  try{
+    const data={state,activeRoom,savedFurniture,version:3};
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  }catch(e){console.error('Failed to save to localStorage:',e);}
+}
+
+function loadFromStorage(){
+  try{
+    const saved=localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      const data=JSON.parse(saved);
+      if(data.state){
+        state=data.state;
+        // Migration: ensure all rooms exist in state
+        Object.keys(ROOMS).forEach(k=>{
+          if(!state[k]){
+            const init=INITIAL_FURNITURE[k]||[];
+            state[k]={layouts:[{name:'Layout 1',furniture:JSON.parse(JSON.stringify(init)),nextId:init.length+1}],curLayout:0};
+          }
+        });
+        // Migration: add living room draggable furniture if missing (was previously fixed)
+        if(state.living&&!data.version){
+          const names=['High Cabinet','Low Cabinet','Round Table'];
+          state.living.layouts.forEach(l=>{
+            const hasAny=l.furniture.some(f=>names.includes(f.name));
+            if(!hasAny){
+              const init=INITIAL_FURNITURE.living||[];
+              const maxId=l.furniture.reduce((m,f)=>Math.max(m,f.id),0);
+              init.forEach((item,i)=>{
+                l.furniture.push({...item,id:maxId+i+1});
+              });
+              l.nextId=Math.max(l.nextId||1,maxId+init.length+1);
+            }
+          });
+        }
+      }
+      if(data.activeRoom)activeRoom=data.activeRoom;
+      if(data.savedFurniture)savedFurniture=data.savedFurniture;
+      return true;
+    }
+  }catch(e){console.error('Failed to load from localStorage:',e);}
+  return false;
+}
+
+// ===== UNDO/REDO =====
+let undoStack=[];
+let redoStack=[];
+const MAX_UNDO=50;
+
+function saveSnapshot(){
+  const snapshot={
+    room:activeRoom,
+    layoutIdx:rs().curLayout,
+    furniture:JSON.parse(JSON.stringify(cl().furniture)),
+    nextId:cl().nextId,
+    selectedId
+  };
+  undoStack.push(snapshot);
+  if(undoStack.length>MAX_UNDO)undoStack.shift();
+  redoStack=[];
+}
+
+function undo(){
+  if(!undoStack.length){toast('Nothing to undo');return;}
+  const current={
+    room:activeRoom,
+    layoutIdx:rs().curLayout,
+    furniture:JSON.parse(JSON.stringify(cl().furniture)),
+    nextId:cl().nextId,
+    selectedId
+  };
+  redoStack.push(current);
+  const snap=undoStack.pop();
+  activeRoom=snap.room;
+  rs().curLayout=snap.layoutIdx;
+  cl().furniture=snap.furniture;
+  cl().nextId=snap.nextId;
+  selectedId=snap.selectedId;
+  saveToStorage();renderAll();
+  toast('Undo');
+}
+
+function redo(){
+  if(!redoStack.length){toast('Nothing to redo');return;}
+  const current={
+    room:activeRoom,
+    layoutIdx:rs().curLayout,
+    furniture:JSON.parse(JSON.stringify(cl().furniture)),
+    nextId:cl().nextId,
+    selectedId
+  };
+  undoStack.push(current);
+  const snap=redoStack.pop();
+  activeRoom=snap.room;
+  rs().curLayout=snap.layoutIdx;
+  cl().furniture=snap.furniture;
+  cl().nextId=snap.nextId;
+  selectedId=snap.selectedId;
+  saveToStorage();renderAll();
+  toast('Redo');
+}
+
+// ===== SNAP TO WALL/EDGE =====
+const SNAP_THRESHOLD=5;
+let snapGuides=[];
+
+function getSnapPosition(item,fArr,R){
+  const candidates=[];
+  candidates.push({x:0,y:item.y,type:'wall-left',dist:item.x});
+  candidates.push({x:R.w-item.w,y:item.y,type:'wall-right',dist:R.w-(item.x+item.w)});
+  candidates.push({x:item.x,y:0,type:'wall-top',dist:item.y});
+  candidates.push({x:item.x,y:R.h-item.h,type:'wall-bottom',dist:R.h-(item.y+item.h)});
+
+  const obstacles=[...R.fixed,...fArr.filter(f=>f.id!==item.id)];
+  obstacles.forEach(o=>{
+    if(item.y<o.y+o.h&&item.y+item.h>o.y){
+      candidates.push({x:o.x+o.w,y:item.y,type:'edge-right',dist:Math.abs(item.x-(o.x+o.w))});
+      candidates.push({x:o.x-item.w,y:item.y,type:'edge-left',dist:Math.abs((item.x+item.w)-o.x)});
+    }
+    if(item.x<o.x+o.w&&item.x+item.w>o.x){
+      candidates.push({x:item.x,y:o.y+o.h,type:'edge-bottom',dist:Math.abs(item.y-(o.y+o.h))});
+      candidates.push({x:item.x,y:o.y-item.h,type:'edge-top',dist:Math.abs((item.y+item.h)-o.y)});
+    }
+  });
+
+  const xSnap=candidates.filter(c=>c.dist<=SNAP_THRESHOLD&&['wall-left','wall-right','edge-left','edge-right'].includes(c.type)).sort((a,b)=>a.dist-b.dist)[0];
+  const ySnap=candidates.filter(c=>c.dist<=SNAP_THRESHOLD&&['wall-top','wall-bottom','edge-top','edge-bottom'].includes(c.type)).sort((a,b)=>a.dist-b.dist)[0];
+
+  snapGuides=[];
+  let snappedX=item.x,snappedY=item.y;
+
+  if(xSnap){
+    snappedX=xSnap.x;
+    if(xSnap.type.includes('wall-left'))snapGuides.push({x1:0,y1:0,x2:0,y2:R.h});
+    else if(xSnap.type.includes('wall-right'))snapGuides.push({x1:R.w,y1:0,x2:R.w,y2:R.h});
+    else if(xSnap.type.includes('edge'))snapGuides.push({x1:snappedX+(xSnap.type==='edge-right'?0:item.w),y1:Math.max(0,item.y-20),x2:snappedX+(xSnap.type==='edge-right'?0:item.w),y2:Math.min(R.h,item.y+item.h+20)});
+  }
+
+  if(ySnap){
+    snappedY=ySnap.y;
+    if(ySnap.type.includes('wall-top'))snapGuides.push({x1:0,y1:0,x2:R.w,y2:0});
+    else if(ySnap.type.includes('wall-bottom'))snapGuides.push({x1:0,y1:R.h,x2:R.w,y2:R.h});
+    else if(ySnap.type.includes('edge'))snapGuides.push({x1:Math.max(0,item.x-20),y1:snappedY+(ySnap.type==='edge-bottom'?0:item.h),x2:Math.min(R.w,item.x+item.w+20),y2:snappedY+(ySnap.type==='edge-bottom'?0:item.h)});
+  }
+
+  return{x:snappedX,y:snappedY,snapped:!!(xSnap||ySnap)};
+}
+
+
+
+function rd(){return ROOMS[activeRoom]}
+
+function rs(){return state[activeRoom]}
+
+function cl(){return rs().layouts[rs().curLayout]}
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+
+
+
+// ===== BIRD'S-EYE SVG FOR FURNITURE =====
+
+let _svgUid=0;
+
+// Generate radial slat bars around an ellipse perimeter
+
+function radialSlats(cx,cy,outerRx,outerRy,innerRx,innerRy,count,color,sw){
+
+   let s='';
+
+   for(let i=0;i<count;i++){
+
+     const a=(2*Math.PI*i)/count;
+
+     const ox=cx+outerRx*Math.cos(a),oy=cy+outerRy*Math.sin(a);
+
+     const ix=cx+innerRx*Math.cos(a),iy=cy+innerRy*Math.sin(a);
+
+     s+=`<line x1="${ox.toFixed(1)}" y1="${oy.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${iy.toFixed(1)}" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"/>`;
+
+   }
+
+   return s;
+
+}
+
+// Generate quilted diamond pattern lines inside an ellipse
+
+function quiltLines(cx,cy,rx,ry,spacing){
+
+   let s='';
+
+   for(let i=-Math.ceil(2*rx/spacing);i<=Math.ceil(2*rx/spacing);i++){
+
+     const offset=i*spacing;
+
+     s+=`<line x1="${cx-rx+offset}" y1="${cy-ry}" x2="${cx+rx+offset}" y2="${cy+ry}" stroke="rgba(200,200,200,.4)" stroke-width="0.5"/>`;
+
+     s+=`<line x1="${cx-rx+offset}" y1="${cy+ry}" x2="${cx+rx+offset}" y2="${cy-ry}" stroke="rgba(200,200,200,.4)" stroke-width="0.5"/>`;
+
+   }
+
+   return s;
+
+}
+
+
+
+function getFurnSVG(name,pw,ph){
+
+   const n=name.toLowerCase();
+
+   const uid=_svgUid++;
+
+
+
+   // ===== STOKKE COT: oval, natural wood radial slats, cream mattress =====
+
+   if(n.includes('stokke')&&n.includes('cot')){
+
+     const cx=pw/2,cy=ph/2,rx=pw/2-1,ry=ph/2-1;
+
+     const railW=Math.max(5,pw*0.06); // thick top rail
+
+     const irx=rx-railW,iry=ry-railW; // inner edge of rail
+
+     const mrx=irx-2,mry=iry-2; // mattress
+
+     const numSlats=Math.max(16,Math.round((rx+ry)*0.35));
+
+     const slats=radialSlats(cx,cy,rx-1,ry-1,irx+1,iry+1,numSlats,'#C4A882',Math.max(1.5,pw*0.015));
+
+     return `<svg viewBox="0 0 ${pw} ${ph}" style="position:absolute;top:0;left:0;width:100%;height:100%">
+
+       <defs><clipPath id="sc${uid}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath></defs>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#E8D5BC"/>
+
+       ${slats}
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${mrx}" ry="${mry}" fill="#FAF5EF" stroke="#E8D8C0" stroke-width="1"/>
+
+       <g clip-path="url(#sc${uid})">
+
+         <ellipse cx="${cx}" cy="${cy}" rx="${mrx-3}" ry="${mry-3}" fill="none" stroke="rgba(210,195,170,.2)" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+       </g>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#B8976A" stroke-width="${railW}" opacity="0.5"/>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#8B7355" stroke-width="2"/>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx-railW/2}" ry="${ry-railW/2}" fill="none" stroke="rgba(139,115,85,.3)" stroke-width="0.5"/>
+
+     </svg>`;
+
+   }
+
+
+
+   // ===== STOKKE ROUND: circular, natural wood radial slats =====
+
+   if(n.includes('stokke')&&(n.includes('round')||n.includes('baby'))){
+
+     const cx=pw/2,cy=ph/2,r=Math.min(pw,ph)/2-1;
+
+     const railW=Math.max(5,r*0.12);
+
+     const ir=r-railW;
+
+     const mr=ir-2;
+
+     const numSlats=Math.max(14,Math.round(r*0.7));
+
+     const slats=radialSlats(cx,cy,r-1,r-1,ir+1,ir+1,numSlats,'#C4A882',Math.max(1.5,r*0.03));
+
+     return `<svg viewBox="0 0 ${pw} ${ph}" style="position:absolute;top:0;left:0;width:100%;height:100%">
+
+       <defs><clipPath id="sr${uid}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs>
+
+       <circle cx="${cx}" cy="${cy}" r="${r}" fill="#E8D5BC"/>
+
+       ${slats}
+
+       <circle cx="${cx}" cy="${cy}" r="${mr}" fill="#FAF5EF" stroke="#E8D8C0" stroke-width="1"/>
+
+       <g clip-path="url(#sr${uid})">
+
+         <circle cx="${cx}" cy="${cy}" r="${mr-3}" fill="none" stroke="rgba(210,195,170,.2)" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+       </g>
+
+       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#B8976A" stroke-width="${railW}" opacity="0.5"/>
+
+       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#8B7355" stroke-width="2"/>
+
+       <circle cx="${cx}" cy="${cy}" r="${r-railW/2}" fill="none" stroke="rgba(139,115,85,.3)" stroke-width="0.5"/>
+
+     </svg>`;
+
+   }
+
+
+
+   // ===== BONBIJOU COT: oval, white radial spindles, quilted mattress =====
+
+   if(n.includes('bonbijou')&&n.includes('cot')){
+
+     const cx=pw/2,cy=ph/2,rx=pw/2-1,ry=ph/2-1;
+
+     const railW=Math.max(4,pw*0.045);
+
+     const irx=rx-railW,iry=ry-railW;
+
+     const mrx=irx-1,mry=iry-1;
+
+     const numSlats=Math.max(18,Math.round((rx+ry)*0.4));
+
+     const slats=radialSlats(cx,cy,rx-1,ry-1,irx+1,iry+1,numSlats,'#D0D0D0',Math.max(1,pw*0.012));
+
+     const quilting=quiltLines(cx,cy,mrx-2,mry-2,Math.max(6,pw*0.06));
+
+     return `<svg viewBox="0 0 ${pw} ${ph}" style="position:absolute;top:0;left:0;width:100%;height:100%">
+
+       <defs><clipPath id="bc${uid}"><ellipse cx="${cx}" cy="${cy}" rx="${mrx}" ry="${mry}"/></clipPath></defs>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#F0F0F0"/>
+
+       ${slats}
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${mrx}" ry="${mry}" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1"/>
+
+       <g clip-path="url(#bc${uid})">${quilting}</g>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="rgba(220,220,220,.7)" stroke-width="${railW}"/>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#BEBEBE" stroke-width="1.5"/>
+
+       <ellipse cx="${cx}" cy="${cy}" rx="${rx-railW/2}" ry="${ry-railW/2}" fill="none" stroke="rgba(190,190,190,.3)" stroke-width="0.5"/>
+
+     </svg>`;
+
+   }
+
+
+
+   // ===== BONBIJOU ROUND: circular, white radial spindles, quilted mattress =====
+
+   if(n.includes('bonbijou')&&(n.includes('round')||n.includes('baby'))){
+
+     const cx=pw/2,cy=ph/2,r=Math.min(pw,ph)/2-1;
+
+     const railW=Math.max(4,r*0.1);
+
+     const ir=r-railW;
+
+     const mr=ir-1;
+
+     const numSlats=Math.max(14,Math.round(r*0.7));
+
+     const slats=radialSlats(cx,cy,r-1,r-1,ir+1,ir+1,numSlats,'#D0D0D0',Math.max(1,r*0.025));
+
+     const quilting=quiltLines(cx,cy,mr-2,mr-2,Math.max(6,r*0.12));
+
+     return `<svg viewBox="0 0 ${pw} ${ph}" style="position:absolute;top:0;left:0;width:100%;height:100%">
+
+       <defs><clipPath id="br${uid}"><circle cx="${cx}" cy="${cy}" r="${mr}"/></clipPath></defs>
+
+       <circle cx="${cx}" cy="${cy}" r="${r}" fill="#F0F0F0"/>
+
+       ${slats}
+
+       <circle cx="${cx}" cy="${cy}" r="${mr}" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1"/>
+
+       <g clip-path="url(#br${uid})">${quilting}</g>
+
+       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(220,220,220,.7)" stroke-width="${railW}"/>
+
+       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#BEBEBE" stroke-width="1.5"/>
+
+       <circle cx="${cx}" cy="${cy}" r="${r-railW/2}" fill="none" stroke="rgba(190,190,190,.3)" stroke-width="0.5"/>
+
+     </svg>`;
+
+   }
+
+
+
+   // ===== BOORI OVAL COT: stadium shape, beech wood radial slats =====
+
+   if(n.includes('boori')&&n.includes('cot')){
+
+     // Stadium shape: top semicircle (r=pw/2) + rect middle + bottom semicircle (r=pw/2)
+
+     const cx=pw/2,cy=ph/2;
+
+     const r=pw/2; // semicircle radius = half width
+
+     const rectH=ph-pw; // middle rectangle height = total height - 2*radius
+
+     const railW=Math.max(5,pw*0.06);
+
+     // Outer stadium path
+
+     const outerPath=`M 1,${r} A ${r-1},${r-1} 0 0,1 ${pw-1},${r} L ${pw-1},${ph-r} A ${r-1},${r-1} 0 0,1 1,${ph-r} Z`;
+
+     // Inner stadium path (inside rail)
+
+     const ir=r-railW;
+
+     const innerTop=railW;
+
+     const innerBot=ph-railW;
+
+     const innerPath=`M ${railW},${r} A ${ir},${ir} 0 0,1 ${pw-railW},${r} L ${pw-railW},${ph-r} A ${ir},${ir} 0 0,1 ${railW},${ph-r} Z`;
+
+     // Mattress path (slightly smaller)
+
+     const mr=ir-2;
+
+     const mattPath=`M ${railW+2},${r} A ${mr},${mr} 0 0,1 ${pw-railW-2},${r} L ${pw-railW-2},${ph-r} A ${mr},${mr} 0 0,1 ${railW+2},${ph-r} Z`;
+
+     // Radial slats around the stadium perimeter
+
+     let slats='';
+
+     const numSlats=Math.max(20,Math.round((pw+ph)*0.25));
+
+     const perim=Math.PI*pw+2*rectH; // approximate perimeter
+
+     for(let i=0;i<numSlats;i++){
+
+       const t=i/numSlats*perim;
+
+       let ox,oy,ix,iy;
+
+       const topArc=Math.PI*r;
+
+       const rightSide=rectH;
+
+       const botArc=Math.PI*r;
+
+       if(t<topArc){
+
+         // Top semicircle
+
+         const a=Math.PI-t/r;
+
+         ox=cx+(r-1)*Math.cos(a);oy=r-(r-1)*Math.sin(a);
+
+         ix=cx+(ir+1)*Math.cos(a);iy=r-(ir+1)*Math.sin(a);
+
+       }else if(t<topArc+rightSide){
+
+         // Right side
+
+         const d=t-topArc;
+
+         ox=pw-1;oy=r+d;
+
+         ix=pw-railW+1;iy=r+d;
+
+       }else if(t<topArc+rightSide+botArc){
+
+         // Bottom semicircle
+
+         const d=t-topArc-rightSide;
+
+         const a=-d/r;
+
+         ox=cx+(r-1)*Math.cos(a);oy=ph-r+(r-1)*Math.sin(a);
+
+         ix=cx+(ir+1)*Math.cos(a);iy=ph-r+(ir+1)*Math.sin(a);
+
+       }else{
+
+         // Left side
+
+         const d=t-topArc-rightSide-botArc;
+
+         ox=1;oy=ph-r-d;
+
+         ix=railW-1;iy=ph-r-d;
+
+       }
+
+       slats+=`<line x1="${ox.toFixed(1)}" y1="${oy.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${iy.toFixed(1)}" stroke="#C4A882" stroke-width="${Math.max(1.5,pw*0.015)}" stroke-linecap="round"/>`;
+
+     }
+
+     return `<svg viewBox="0 0 ${pw} ${ph}" style="position:absolute;top:0;left:0;width:100%;height:100%">
+
+       <defs><clipPath id="bo${uid}"><path d="${mattPath}"/></clipPath></defs>
+
+       <path d="${outerPath}" fill="#E8D5BC"/>
+
+       ${slats}
+
+       <path d="${mattPath}" fill="#FAF5EF" stroke="#E8D8C0" stroke-width="1"/>
+
+       <path d="${outerPath}" fill="none" stroke="#B8976A" stroke-width="${railW}" opacity="0.5"/>
+
+       <path d="${outerPath}" fill="none" stroke="#8B7355" stroke-width="2"/>
+
+     </svg>`;
+
+   }
+
+
+
+   // ===== SOFA BED =====
+
+   if(n.includes('sofa')){
+
+     const arm=Math.max(8,Math.min(pw,ph)*0.1);
+
+     const back=Math.max(10,ph*0.15);
+
+     return `<svg viewBox="0 0 ${pw} ${ph}" style="position:absolute;top:0;left:0;width:100%;height:100%">
+
+       <rect x="0" y="0" width="${pw}" height="${ph}" rx="5" fill="#6B7B8D" stroke="#5A6A7A" stroke-width="1.5"/>
+
+       <rect x="1" y="1" width="${arm}" height="${ph-2}" rx="3" fill="#5A6A7A"/>
+
+       <rect x="${pw-arm-1}" y="1" width="${arm}" height="${ph-2}" rx="3" fill="#5A6A7A"/>
+
+       <rect x="${arm+1}" y="1" width="${pw-arm*2-2}" height="${back}" rx="2" fill="#596A7A"/>
+
+       <rect x="${arm+2}" y="${back+2}" width="${(pw-arm*2-6)/2}" height="${ph-back-4}" rx="3" fill="#8899AA" stroke="#7B8A9A" stroke-width="0.5"/>
+
+       <rect x="${arm+4+(pw-arm*2-6)/2}" y="${back+2}" width="${(pw-arm*2-6)/2}" height="${ph-back-4}" rx="3" fill="#8899AA" stroke="#7B8A9A" stroke-width="0.5"/>
+
+     </svg>`;
+
+   }
+
+   return null;
+
+}
+
+
+
+// ===== FURNITURE VISUALS =====
+
+function getFurnStyle(item){
+
+   const n=item.name.toLowerCase();
+
+   if(n.includes('stokke')&&(n.includes('round')||n.includes('baby')))
+
+     return{radius:'50%',bg:'radial-gradient(ellipse at center,#FAF5EF 45%,#E8D5BC 60%,#C4A882 78%,#A0845C 100%)',shadow:'inset 0 0 0 3px #B8976A,0 2px 6px rgba(0,0,0,.12)',tc:'#5A4228'};
+
+   if(n.includes('stokke')&&n.includes('cot'))
+
+     return{radius:'48%',bg:'radial-gradient(ellipse at center,#FAF5EF 45%,#E8D5BC 60%,#C4A882 78%,#A0845C 100%)',shadow:'inset 0 0 0 3px #B8976A,0 2px 6px rgba(0,0,0,.12)',tc:'#5A4228'};
+
+   if(n.includes('bonbijou')&&(n.includes('round')||n.includes('baby')))
+
+     return{radius:'50%',bg:'radial-gradient(ellipse at center,#FFFFFF 45%,#F5F5F5 60%,#E8E8E8 78%,#D0D0D0 100%)',shadow:'inset 0 0 0 3px #DCDCDC,0 2px 6px rgba(0,0,0,.1)',tc:'#555'};
+
+   if(n.includes('bonbijou')&&n.includes('cot'))
+
+     return{radius:'48%',bg:'radial-gradient(ellipse at center,#FFFFFF 45%,#F5F5F5 60%,#E8E8E8 78%,#D0D0D0 100%)',shadow:'inset 0 0 0 3px #DCDCDC,0 2px 6px rgba(0,0,0,.1)',tc:'#555'};
+
+   if(n.includes('boori')&&n.includes('cot'))
+
+     return{radius:'0',bg:'transparent',shadow:'none',tc:'#5A4228'};
+
+   if(n.includes('sofa'))
+
+     return{radius:'6px',bg:'linear-gradient(145deg,#7B8A9A 0%,#8899AA 30%,#7B8A9A 70%,#6B7B8D 100%)',shadow:'inset 0 -3px 6px rgba(0,0,0,.2),inset 3px 0 6px rgba(255,255,255,.08),0 2px 6px rgba(0,0,0,.12)',tc:'#fff'};
+
+   if(n.includes('high cabinet')||n.includes('low cabinet'))
+
+     return{radius:'2px',bg:'linear-gradient(180deg,#8B7355,#7B6544)',shadow:'inset 0 0 0 1px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.12)',tc:'#fff'};
+
+   if(n.includes('round table'))
+
+     return{radius:'50%',bg:'radial-gradient(circle,#D4BA96 40%,#C4A882 70%,#A0845C 100%)',shadow:'0 2px 6px rgba(0,0,0,.15)',tc:'#5A4228'};
+
+   return{radius:'3px',bg:item.color||'#888',shadow:'0 1px 4px rgba(0,0,0,.15)',tc:'#fff'};
+
+}
+
+
+
+function getFixedStyle(type,w,h,s){
+
+   switch(type){
+
+     case'bed':return`background:linear-gradient(to bottom,#6B5B45 0%,#6B5B45 ${Math.round(25*s)}px,#F0E8DC ${Math.round(25*s)+1}px,#F0E8DC 100%);border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.1);`;
+
+     case'nightstand':return`background:linear-gradient(135deg,#5C4A35,#7B6544);border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.15);`;
+
+     case'cupboard':return`background:linear-gradient(135deg,#C0392B,#A93226);border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);`;
+
+     case'table':return`background:linear-gradient(135deg,#D4A017,#C49510);border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);`;
+
+     case'cabinet-tall':return`background:linear-gradient(180deg,#8B7355,#7B6544);border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);`;
+
+     case'round-table':return`background:radial-gradient(circle,#D4BA96 40%,#C4A882 70%,#A0845C 100%);border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.15);`;
+
+     case'pillar':return`background:repeating-linear-gradient(45deg,#999,#999 3px,#aaa 3px,#aaa 6px);border-radius:1px;`;
+
+     default:return`background:#888;`;
+
+   }
+
+}
+
+
+
+// ===== DOOR RENDERING HELPERS =====
+
+// Cross product to determine SVG arc sweep direction
+
+// Returns sweep flag: 1=clockwise, 0=counter-clockwise
+
+function doorSweep(hx,hy,ex,ey,ax,ay){
+
+   const v1x=ex-hx,v1y=ey-hy;
+
+   const v2x=ax-hx,v2y=ay-hy;
+
+   const cross=v1x*v2y-v1y*v2x;
+
+   return cross>0?1:0;
+
+}
+
+
+
+function renderDoor(d,s,svgEl){
+
+   const hx=d.hx*s,hy=d.hy*s,ex=d.ex*s,ey=d.ey*s;
+
+   if(!d.ax&&d.ax!==0){
+
+     // Indicator only - entrance marker with edge lines and hatched area
+
+     const line=mkSVG('line',{x1:hx,y1:hy,x2:ex,y2:ey,stroke:'#D4A017','stroke-width':3});
+
+     svgEl.appendChild(line);
+
+     // Draw perpendicular tick marks at hinge and end to show door edges
+
+     const dx=ex-hx,dy=ey-hy;
+
+     const len=Math.sqrt(dx*dx+dy*dy);
+
+     if(len>0){
+
+       const nx=-dy/len,ny=dx/len;
+
+       const tickLen=8*s;
+
+       // Tick at hinge point
+
+       svgEl.appendChild(mkSVG('line',{x1:hx,y1:hy,x2:hx+nx*tickLen,y2:hy+ny*tickLen,stroke:'#D4A017','stroke-width':2.5}));
+
+       // Tick at end point
+
+       svgEl.appendChild(mkSVG('line',{x1:ex,y1:ey,x2:ex+nx*tickLen,y2:ey+ny*tickLen,stroke:'#D4A017','stroke-width':2.5}));
+
+       // Hatched entrance zone
+
+       const steps=4;
+
+       for(let i=1;i<=steps;i++){
+
+         const t=i/(steps+1);
+
+         const px=hx+dx*t,py=hy+dy*t;
+
+         svgEl.appendChild(mkSVG('line',{x1:px,y1:py,x2:px+nx*tickLen*0.6,y2:py+ny*tickLen*0.6,stroke:'#D4A017','stroke-width':1,opacity:'0.4'}));
+
+       }
+
+     }
+
+     if(d.label){
+
+       const mx=(hx+ex)/2,my=(hy+ey)/2;
+
+       const isVertical=Math.abs(dy)>Math.abs(dx);
+
+       const nx=-dy/len,ny=dx/len;
+
+       const labelOff=12*s;
+
+       const t=mkSVG('text',{x:mx+nx*labelOff,y:my+ny*labelOff+3,'text-anchor':'middle','font-size':Math.max(7,9*s/1.5),fill:'#D4A017','font-weight':'bold'});
+
+       t.textContent=d.label;svgEl.appendChild(t);
+
+     }
+
+     return;
+
+   }
+
+   const ax=d.ax*s,ay=d.ay*s;
+
+   const radius=Math.sqrt((ex-hx)**2+(ey-hy)**2);
+
+   const sweep=doorSweep(d.hx,d.hy,d.ex,d.ey,d.ax,d.ay);
+
+   // Door closed position line
+
+   svgEl.appendChild(mkSVG('line',{x1:hx,y1:hy,x2:ex,y2:ey,stroke:'#D4A017','stroke-width':2.5}));
+
+   // Arc from closed end to open end
+
+   const path=mkSVG('path',{d:`M ${ex},${ey} A ${radius},${radius} 0 0,${sweep} ${ax},${ay}`,fill:'rgba(212,160,23,.06)',stroke:'#D4A017','stroke-width':1,'stroke-dasharray':'4,3'});
+
+   svgEl.appendChild(path);
+
+}
+
+
+
+// Get bounding box of door swing for clearance check
+
+function doorBounds(d){
+
+   if(!d.ax&&d.ax!==0) return null;
+
+   const pts=[[d.hx,d.hy],[d.ex,d.ey],[d.ax,d.ay]];
+
+   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+
+   pts.forEach(([x,y])=>{minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);});
+
+   return{x:minX,y:minY,w:maxX-minX,h:maxY-minY};
+
+}
+
+
+
+// ===== RENDERING =====
+
+function renderAll(){_svgUid=0;renderRoomTabs();renderLayoutTabs();renderRoomArea();updateList();renderSavedList();renderFitAnalysis()}
+
+
+
+function renderRoomTabs(){
+
+   document.getElementById('room-tabs').innerHTML=Object.keys(ROOMS).map(k=>
+
+     `<div class="room-tab${k===activeRoom?' active':''}" onclick="switchRoom('${k}')">${ROOMS[k].name}</div>`
+
+   ).join('');
+
+}
+
+
+
+function renderLayoutTabs(){
+
+   const tabs=document.getElementById('layout-tabs');
+
+   const ls=rs().layouts;
+
+   let h='';
+
+   ls.forEach((l,i)=>{h+=`<div class="ltab${i===rs().curLayout&&!compareMode?' active':''}" onclick="switchLayout(${i})">${l.name}${ls.length>1?`<span class="ltab-close" onclick="event.stopPropagation();removeLayout(${i})">×</span>`:''}  </div>`;});
+
+   h+=`<div class="ltab ltab-add" onclick="addLayout()">+ New</div>`;
+
+   if(compareMode) h+=`<div class="ltab active" style="background:#764ba2">⚡ Compare</div>`;
+
+   tabs.innerHTML=h;
+
+}
+
+
+
+function renderRoomArea(){
+
+   const area=document.getElementById('room-area');area.innerHTML='';
+
+   const R=rd();
+
+   if(compareMode&&compareIdx>=0){
+
+     const maxW=(area.clientWidth-60)/2,maxH=area.clientHeight-80;
+
+     const s=Math.min(maxW/R.w,maxH/R.h,1.3);
+
+     [rs().curLayout,compareIdx].forEach((li,ci)=>{
+
+       const col=document.createElement('div');col.className='room-col';
+
+       const t=document.createElement('div');t.className='room-title';t.textContent=rs().layouts[li].name;col.appendChild(t);
+
+       const rm=mkRoom(R,rs().layouts[li].furniture,s,ci===0);col.appendChild(rm);
+
+       const a=analyzeFit(rs().layouts[li].furniture,R);
+
+       const v=document.createElement('div');v.className='compare-verdict';
+
+       if(a.overlaps>0){v.style.cssText='background:#f8d7da;color:#721c24';v.textContent='❌ '+a.overlaps+' overlap(s)';}
+
+       else if(a.tightSpots>0){v.style.cssText='background:#fff3cd;color:#856404';v.textContent='⚠️ Tight ('+a.minCl+'cm min)';}
+
+       else if(!rs().layouts[li].furniture.length){v.style.cssText='background:#e2e8f0;color:#666';v.textContent='Empty';}
+
+       else{v.style.cssText='background:#d4edda;color:#155724';v.textContent='✅ Fits! ('+a.minCl+'cm min)';}
+
+       col.appendChild(v);
+
+       const sb=document.createElement('div');sb.className='scale-bar';sb.innerHTML=`<div class="scale-line" style="width:${50*s}px"></div><span>50cm</span>`;col.appendChild(sb);
+
+       area.appendChild(col);
+
+     });
+
+   }else{
+
+     const maxW=area.clientWidth-40,maxH=area.clientHeight-60;
+
+     const s=Math.min(maxW/R.w,maxH/R.h,2);
+
+     const col=document.createElement('div');col.className='room-col';
+
+     col.appendChild(mkRoom(R,cl().furniture,s,true));
+
+     const sb=document.createElement('div');sb.className='scale-bar';sb.innerHTML=`<div class="scale-line" style="width:${50*s}px"></div><span>50cm</span>`;col.appendChild(sb);
+
+     area.appendChild(col);
+
+   }
+
+}
+
+
+
+function mkRoom(R,fArr,s,interactive){
+
+   const wrap=document.createElement('div');wrap.style.cssText='position:relative;display:inline-block;';
+
+   const rm=document.createElement('div');rm.className='room';
+
+   rm.style.cssText=`width:${R.w*s}px;height:${R.h*s}px;`;
+
+   // Fixed items
+
+   R.fixed.forEach(f=>{
+
+     const el=document.createElement('div');el.className='fixed-item';
+
+     el.style.cssText=`left:${f.x*s}px;top:${f.y*s}px;width:${f.w*s}px;height:${f.h*s}px;${getFixedStyle(f.type,f.w,f.h,s)}`;
+
+     if(f.label){const lb=document.createElement('div');lb.className='fi-label';lb.style.fontSize=Math.max(7,8*(s/1.5))+'px';lb.textContent=f.label;el.appendChild(lb);}
+
+     if(f.type==='bed'){
+
+       const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+
+       svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+
+       const pw=32*s,ph=18*s,py=18*s;
+
+       svg.innerHTML=`<ellipse cx="${f.w*s/2-pw/2-4*s}" cy="${py}" rx="${pw/2}" ry="${ph/2}" fill="rgba(255,255,255,.6)" stroke="rgba(200,200,200,.4)" stroke-width="1"/>
+
+         <ellipse cx="${f.w*s/2+pw/2+4*s}" cy="${py}" rx="${pw/2}" ry="${ph/2}" fill="rgba(255,255,255,.6)" stroke="rgba(200,200,200,.4)" stroke-width="1"/>
+
+         <rect x="${4*s}" y="${f.h*s*.55}" width="${(f.w-8)*s}" height="${f.h*s*.4}" rx="${3*s}" fill="rgba(210,195,170,.2)" stroke="rgba(180,160,130,.15)" stroke-width="1"/>`;
+
+       el.appendChild(svg);
+
+     }
+
+     rm.appendChild(el);
+
+   });
+
+   // Doors via SVG overlay (rendered later with main overlay)
+
+   // Furniture
+
+   fArr.forEach(f=>{
+
+     const st=getFurnStyle(f);
+
+     const el=document.createElement('div');
+
+     el.className='furniture'+(interactive&&f.id===selectedId?' selected':'');
+
+     el.dataset.id=f.id;
+
+     if(checkOverlap(f,fArr,R)) el.classList.add('overlapping');
+
+     const pw=f.w*s,ph=f.h*s;
+
+     el.style.cssText=`left:${f.x*s}px;top:${f.y*s}px;width:${pw}px;height:${ph}px;background:${st.bg};border-radius:${st.radius};box-shadow:${st.shadow};`;
+
+     // Try bird's-eye SVG
+
+     const svgHtml=getFurnSVG(f.name,pw,ph);
+
+     const fs=Math.max(7,8*(s/1.5));
+
+     if(svgHtml){
+
+       el.innerHTML=svgHtml+`<div class="furn-label" style="font-size:${fs}px;color:${st.tc};position:relative;z-index:3;text-shadow:0 0 3px rgba(255,255,255,.8)">${escapeHtml(f.name)}<br><span style="font-size:${fs-1}px;opacity:.7">${f.w}×${f.h}</span></div>`;
+
+     }else{
+
+       el.innerHTML=`<div class="furn-label" style="font-size:${fs}px;color:${st.tc}">${escapeHtml(f.name)}<br><span style="font-size:${fs-1}px;opacity:.7">${f.w}×${f.h}</span></div>`;
+
+     }
+
+     if(interactive){
+
+       el.addEventListener('mousedown',e=>{e.preventDefault();startDrag(e,f.id,rm,s)});
+
+       el.addEventListener('touchstart',e=>{e.preventDefault();startDrag(e,f.id,rm,s)},{passive:false});
+
+       el.addEventListener('click',e=>{e.stopPropagation();selectFurniture(f.id)});
+
+     }
+
+     rm.appendChild(el);
+
+   });
+
+   // SVG overlay for measurements, rulers, and doors
+
+   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+
+   svg.classList.add('overlay-svg');
+
+   // Render doors into the SVG
+
+   R.doors.forEach(d=>renderDoor(d,s,svg));
+
+   rm.appendChild(svg);
+
+   if(interactive){
+
+     renderOverlay(svg,fArr,s,R);
+
+     rm._svg=svg;rm._s=s;rm._f=fArr;rm._R=R;
+
+     rm.addEventListener('mousedown',e=>{
+
+       if(rulerMode&&(e.target===rm||e.target.closest('.fixed-item'))){
+
+         const p=getPos(e,rm,s);rulerStart={x:clamp(p.x,0,R.w),y:clamp(p.y,0,R.h)};rulerEnd={...rulerStart};rulerActive=true;activeContainer=rm;activeScale=s;renderOverlay(svg,fArr,s,R);}
+
+     });
+
+     rm.addEventListener('click',e=>{if(!rulerMode&&(e.target===rm||e.target.closest('.fixed-item'))){selectedId=null;saveToStorage();renderAll();}});
+
+   }
+
+   wrap.appendChild(rm);return wrap;
+
+}
+
+
+
+function renderOverlay(svg,fArr,s,R){
+
+   // Keep door elements, clear the rest
+
+   const doorEls=[];
+
+   for(let i=0;i<svg.childNodes.length;i++){
+
+     const el=svg.childNodes[i];
+
+     if(el._isDoor) doorEls.push(el);
+
+   }
+
+   svg.innerHTML='';
+
+   // Re-render doors
+
+   R.doors.forEach(d=>renderDoor(d,s,svg));
+
+   if(rulerMode&&rulerStart&&rulerEnd) drawRuler(svg,s);
+
+   if(!showMeasure||!selectedId) return;
+
+   const item=fArr.find(f=>f.id===selectedId);if(!item) return;
+
+   const obs=[...R.fixed,...fArr.filter(f=>f.id!==item.id).map(f=>({id:'f',x:f.x,y:f.y,w:f.w,h:f.h}))];
+
+   const d=getDist(item,obs,R);
+
+   const ix=item.x*s,iy=item.y*s,iw=item.w*s,ih=item.h*s,mx=ix+iw/2,my=iy+ih/2;
+
+   if(d.l>0)drawML(svg,ix,my,ix-d.l*s,my,d.l,true);
+
+   if(d.r>0)drawML(svg,ix+iw,my,ix+iw+d.r*s,my,d.r,true);
+
+   if(d.t>0)drawML(svg,mx,iy,mx,iy-d.t*s,d.t,false);
+
+   if(d.b>0)drawML(svg,mx,iy+ih,mx,iy+ih+d.b*s,d.b,false);
+
+}
+
+
+
+function drawML(svg,x1,y1,x2,y2,dist,h){
+
+   if(dist<=0)return;
+
+   const ln=mkSVG('line',{x1,y1,x2,y2,stroke:'#E74C3C','stroke-width':1.5,'stroke-dasharray':'5,3'});svg.appendChild(ln);
+
+   [[x1,y1],[x2,y2]].forEach(([cx,cy])=>{
+
+     if(h)svg.appendChild(mkSVG('line',{x1:cx,y1:cy-4,x2:cx,y2:cy+4,stroke:'#E74C3C','stroke-width':1.5}));
+
+     else svg.appendChild(mkSVG('line',{x1:cx-4,y1:cy,x2:cx+4,y2:cy,stroke:'#E74C3C','stroke-width':1.5}));
+
+   });
+
+   const mx=(x1+x2)/2,my=(y1+y2)/2,bw=String(Math.round(dist)).length*6+16;
+
+   svg.appendChild(mkSVG('rect',{x:mx-bw/2,y:my-7,width:bw,height:14,fill:'rgba(255,255,255,.92)',rx:3}));
+
+   const t=mkSVG('text',{x:mx,y:my+3.5,'text-anchor':'middle','font-size':9,'font-weight':'bold',fill:'#E74C3C'});t.textContent=Math.round(dist)+'cm';svg.appendChild(t);
+
+}
+
+
+
+function drawRuler(svg,s){
+
+   if(!rulerStart||!rulerEnd)return;
+
+   const x1=rulerStart.x*s,y1=rulerStart.y*s,x2=rulerEnd.x*s,y2=rulerEnd.y*s;
+
+   const dx=rulerEnd.x-rulerStart.x,dy=rulerEnd.y-rulerStart.y,dist=Math.sqrt(dx*dx+dy*dy);
+
+   svg.appendChild(mkSVG('line',{x1,y1,x2,y2,stroke:'#FF6B00','stroke-width':2,'stroke-dasharray':'6,3'}));
+
+   [rulerStart,rulerEnd].forEach(p=>svg.appendChild(mkSVG('circle',{cx:p.x*s,cy:p.y*s,r:3,fill:'#FF6B00'})));
+
+   if(Math.abs(dx)>3&&Math.abs(dy)>3){
+
+     svg.appendChild(mkSVG('line',{x1,y1,x2,y2:y1,stroke:'#FF6B00','stroke-width':1,'stroke-dasharray':'3,3',opacity:.4}));
+
+     svg.appendChild(mkSVG('line',{x1:x2,y1,x2,y2,stroke:'#FF6B00','stroke-width':1,'stroke-dasharray':'3,3',opacity:.4}));
+
+     const ht=mkSVG('text',{x:(x1+x2)/2,y:y1-3,'text-anchor':'middle','font-size':8,fill:'#FF6B00','font-weight':600});ht.textContent='H:'+Math.round(Math.abs(dx))+'cm';svg.appendChild(ht);
+
+     const vt=mkSVG('text',{x:x2+5,y:(y1+y2)/2+3,'text-anchor':'start','font-size':8,fill:'#FF6B00','font-weight':600});vt.textContent='V:'+Math.round(Math.abs(dy))+'cm';svg.appendChild(vt);
+
+   }
+
+   const mx=(x1+x2)/2,my=(y1+y2)/2,lw=String(Math.round(dist)).length*7+20;
+
+   svg.appendChild(mkSVG('rect',{x:mx-lw/2,y:my-16,width:lw,height:14,fill:'#FF6B00',rx:7}));
+
+   const t=mkSVG('text',{x:mx,y:my-6,'text-anchor':'middle','font-size':9,fill:'#fff','font-weight':700});t.textContent=Math.round(dist)+' cm';svg.appendChild(t);
+
+}
+
+
+
+function mkSVG(tag,attrs){const el=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));return el;}
+
+
+
+// ===== FIT ANALYSIS =====
+
+function analyzeFit(fArr,R){
+
+   let overlaps=0,tightSpots=0,minCl=Infinity;
+
+   fArr.forEach(f=>{
+
+     if(checkOverlap(f,fArr,R))overlaps++;
+
+     const d=getDist(f,[...R.fixed,...fArr.filter(o=>o.id!==f.id).map(o=>({id:'f',x:o.x,y:o.y,w:o.w,h:o.h}))],R);
+
+     [d.l,d.r,d.t,d.b].forEach(v=>{if(v<minCl&&v>=0)minCl=v;if(v>0&&v<MIN_WALKWAY)tightSpots++;});
+
+   });
+
+   if(minCl===Infinity)minCl=0;
+
+   // Door clearance check using new door format
+
+   const doorBlocked=fArr.some(f=>{
+
+     return R.doors.some(d=>{
+
+       const b=doorBounds(d);
+
+       if(!b) return false;
+
+       return f.x<b.x+b.w&&f.x+f.w>b.x&&f.y<b.y+b.h&&f.y+f.h>b.y;
+
+     });
+
+   });
+
+   return{overlaps,tightSpots,minCl:Math.round(minCl),doorBlocked};
+
+}
+
+
+
+function renderFitAnalysis(){
+
+   const p=document.getElementById('fit-panel');const furn=cl().furniture;const R=rd();
+
+   if(!furn.length){p.innerHTML='<div style="color:#bbb;font-size:10px">Add furniture to see analysis</div>';return;}
+
+   const a=analyzeFit(furn,R);let h='';
+
+   h+=`<div class="fit-row">${a.overlaps>0?'❌':'✅'} ${a.overlaps>0?a.overlaps+' overlap(s)':'No overlaps'}</div>`;
+
+   h+=`<div class="fit-row">${a.doorBlocked?'⚠️ Door swing blocked':'✅ Door swing clear'}</div>`;
+
+  if(a.tightSpots>0)h+=`<div class="fit-row">⚠️ ${a.tightSpots} tight gap(s) <${MIN_WALKWAY}cm</div>`;
+
+   else h+=`<div class="fit-row">✅ All gaps ≥${MIN_WALKWAY}cm</div>`;
+
+   h+=`<div class="fit-row">📐 Min gap: ${a.minCl}cm</div>`;
+
+   if(a.overlaps>0)h+=`<div class="fit-verdict bad">❌ Overlaps — move items</div>`;
+
+   else if(a.doorBlocked||a.minCl<30)h+=`<div class="fit-verdict warn">⚠️ Tight fit</div>`;
+
+   else h+=`<div class="fit-verdict good">✅ Layout works!</div>`;
+
+   p.innerHTML=h;
+
+}
+
+
+
+// ===== LOGIC =====
+
+function checkOverlap(item,fArr,R){
+
+   return[...R.fixed,...fArr.filter(f=>f.id!==item.id)].some(f=>item.x<f.x+f.w&&item.x+item.w>f.x&&item.y<f.y+f.h&&item.y+item.h>f.y);
+
+}
+
+
+
+function getDist(item,obs,R){
+
+   let l=item.x,r=R.w-(item.x+item.w),t=item.y,b=R.h-(item.y+item.h);
+
+   obs.forEach(o=>{
+
+     const vO=item.y<o.y+o.h&&item.y+item.h>o.y;
+
+     const hO=item.x<o.x+o.w&&item.x+item.w>o.x;
+
+     if(vO){const gl=item.x-(o.x+o.w);if(gl>=0&&gl<l)l=gl;const gr=o.x-(item.x+item.w);if(gr>=0&&gr<r)r=gr;}
+
+     if(hO){const gt=item.y-(o.y+o.h);if(gt>=0&&gt<t)t=gt;const gb=o.y-(item.y+item.h);if(gb>=0&&gb<b)b=gb;}
+
+   });
+
+   return{l,r,t,b};
+
+}
+
+
+
+function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,Math.round(v)))}
+
+
+
+// HTML escape function to prevent XSS
+
+function escapeHtml(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+
+
+
+// ===== FURNITURE CATALOG =====
+
+function saveToCatalog(name,w,h,color){
+  // Don't add duplicates (same name + dimensions)
+  const exists=savedFurniture.some(f=>f.name===name&&f.w===w&&f.h===h);
+  if(!exists){
+    savedFurniture.unshift({name,w,h,color});
+    saveToStorage();
+  }
+}
+
+function removeFromCatalog(idx){
+  savedFurniture.splice(idx,1);
+  saveToStorage();renderAll();
+}
+
+function addFromCatalog(idx){
+  const item=savedFurniture[idx];
+  if(item) addFurniture(item.name,item.w,item.h,item.color);
+}
+
+function renderSavedList(){
+  const el=document.getElementById('saved-furniture-list');
+  if(!el)return;
+  if(!savedFurniture.length){
+    el.innerHTML='<div style="color:#bbb;font-size:10px;padding:4px">Add furniture to build your catalog</div>';
+    return;
+  }
+  el.innerHTML=savedFurniture.map((f,i)=>
+    `<div class="flist-item" style="cursor:default">
+      <div class="flist-dot" style="background:${f.color}"></div>
+      <span class="fname">${escapeHtml(f.name)}</span>
+      <span class="fdims">${f.w}×${f.h}</span>
+      <button class="btn-primary" style="padding:2px 6px;font-size:9px;margin-left:3px" onclick="addFromCatalog(${i})" title="Add to layout">+</button>
+      ${editMode?`<button class="btn-danger" style="padding:2px 5px;font-size:9px;margin-left:2px" onclick="removeFromCatalog(${i})" title="Remove from catalog">×</button>`:''}
+    </div>`
+  ).join('');
+}
+
+// ===== FURNITURE MANAGEMENT =====
+
+function addFurniture(name,w,h,color){
+
+   const R=rd(),L=cl();
+
+   // Place in center of room with offset for each piece
+
+   const offset=(L.furniture.length%5)*20;
+
+   let sx=Math.round((R.w-w)/2)+offset;
+
+   let sy=Math.round((R.h-h)/2)+offset;
+
+   // Clamp to room bounds
+
+   sx=clamp(sx,0,R.w-w);
+
+   sy=clamp(sy,0,R.h-h);
+
+   L.furniture.push({id:L.nextId++,name,w,h,x:sx,y:sy,color});
+
+   selectedId=L.furniture[L.furniture.length-1].id;
+
+   // Also save to persistent catalog
+   saveToCatalog(name,w,h,color);
+
+   saveToStorage();renderAll();
+
+}
+
+function addPreset(i){const p=PRESETS[i];addFurniture(p.name,p.w,p.h,p.color)}
+
+function addSet(b){if(b==='bonjibou'){addFurniture('Bonbijou Round',65,65,'#27AE60');addFurniture('Bonbijou Cot',125,65,'#2ECC71');}else{addFurniture('Stokke V3 Cot',141,74,'#8E44AD');addFurniture('Stokke V3 Round',82,67,'#9B59B6');}}
+
+function addCustom(){
+
+   const nm=document.getElementById('fname').value.trim()||'Custom';
+
+   const w=parseInt(document.getElementById('fwidth').value),h=parseInt(document.getElementById('flength').value);
+
+   if(!w||!h){toast('Enter dimensions');return;}
+
+   addFurniture(nm,w,h,CUSTOM_COLORS[colorIdx++%CUSTOM_COLORS.length]);
+
+   document.getElementById('fname').value='';document.getElementById('fwidth').value='';document.getElementById('flength').value='';
+
+}
+
+function selectFurniture(id){selectedId=(selectedId===id)?null:id;saveToStorage();renderAll()}
+
+function rotateSelected(){
+
+  const f=cl().furniture.find(f=>f.id===selectedId);
+
+  if(!f)return;
+
+  saveSnapshot();const R=rd();[f.w,f.h]=[f.h,f.w];f.x=clamp(f.x,0,R.w-f.w);f.y=clamp(f.y,0,R.h-f.h);saveToStorage();renderAll()}
+
+function deleteSelected(){
+
+  if(!selectedId)return;
+
+  saveSnapshot();
+
+  cl().furniture=cl().furniture.filter(f=>f.id!==selectedId);selectedId=null;saveToStorage();renderAll()}
+
+function updateList(){
+
+   const list=document.getElementById('furniture-list');const furn=cl().furniture;
+
+   if(!furn.length){list.innerHTML='<div style="color:#bbb;font-size:10px;padding:4px">None</div>';return;}
+
+   list.innerHTML=furn.map(f=>`<div class="flist-item${f.id===selectedId?' active':''}" onclick="selectFurniture(${f.id})"><div class="flist-dot" style="background:${f.color}"></div><span class="fname">${escapeHtml(f.name)}</span><span class="fdims">${f.w}×${f.h}</span></div>`).join('');
+
+}
+
+
+
+// ===== ROOMS & LAYOUTS =====
+
+function switchRoom(k){activeRoom=k;selectedId=null;compareMode=false;saveToStorage();renderAll()}
+
+function addLayout(nm,furn){
+  const ls=rs().layouts;
+  // For rooms with default furniture, pre-populate new layouts
+  if(!furn&&INITIAL_FURNITURE[activeRoom]){
+    furn=JSON.parse(JSON.stringify(INITIAL_FURNITURE[activeRoom]));
+  }
+  ls.push({name:nm||'Layout '+(ls.length+1),furniture:furn||[],nextId:1+(furn?furn.reduce((m,f)=>Math.max(m,f.id),0):0)});
+  rs().curLayout=ls.length-1;compareMode=false;saveToStorage();renderAll();
+}
+
+function removeLayout(i){const ls=rs().layouts;if(ls.length<=1)return;ls.splice(i,1);if(rs().curLayout>=ls.length)rs().curLayout=ls.length-1;compareMode=false;saveToStorage();renderAll()}
+
+function switchLayout(i){rs().curLayout=i;selectedId=null;compareMode=false;saveToStorage();renderAll()}
+
+
+
+function quickCompare(){
+
+   const s=state[activeRoom];
+
+   const hasB=s.layouts.some(l=>l.name==='Bonbijou Set');
+
+   const hasS=s.layouts.some(l=>l.name==='Stokke V3 Set');
+
+   if(!hasB) s.layouts.push({name:'Bonbijou Set',furniture:[{id:901,name:'Bonbijou Round',w:65,h:65,x:70,y:100,color:'#27AE60'},{id:902,name:'Bonbijou Cot',w:125,h:65,x:300,y:100,color:'#2ECC71'}],nextId:903});
+
+   if(!hasS) s.layouts.push({name:'Stokke V3 Set',furniture:[{id:911,name:'Stokke V3 Cot',w:141,h:74,x:70,y:100,color:'#8E44AD'},{id:912,name:'Stokke V3 Round',w:82,h:67,x:300,y:100,color:'#9B59B6'}],nextId:913});
+
+   const bIdx=s.layouts.findIndex(l=>l.name==='Bonbijou Set');
+
+   const sIdx=s.layouts.findIndex(l=>l.name==='Stokke V3 Set');
+
+   s.curLayout=bIdx;compareIdx=sIdx;compareMode=true;selectedId=null;saveToStorage();renderAll();
+
+   toast('Comparing — drag to arrange');
+
+}
+
+
+
+// ===== SHARE =====
+
+function shareLayouts(){
+
+   try{
+
+     const d={rooms:state,active:activeRoom};
+
+     const url=location.href.split('#')[0]+'#'+btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+
+     navigator.clipboard.writeText(url).then(()=>toast('Link copied! Share with partner.')).catch(()=>{const ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Link copied!');});
+
+   }catch(e){toast('Error generating link')}
+
+}
+
+
+
+function loadUrl(){
+
+   const h=location.hash.slice(1);if(!h)return;
+
+   try{const d=JSON.parse(decodeURIComponent(escape(atob(h))));if(d.rooms){Object.assign(state,d.rooms);activeRoom=d.active||'bed1';}}catch(e){}
+
+}
+
+
+
+// ===== TOGGLES =====
+
+function toggleSidebar(){
+
+   const sb=document.getElementById('sidebar'),ov=document.getElementById('sidebar-overlay');
+
+   sb.classList.toggle('open');ov.classList.toggle('show');
+
+}
+
+function toggleEditMode(){
+  editMode=!editMode;
+  const btn=document.getElementById('editToggle');
+  const label=document.getElementById('editLabel');
+  if(editMode){
+    btn.classList.add('editing');
+    label.textContent='Done';
+  }else{
+    btn.classList.remove('editing');
+    label.textContent='Edit';
+  }
+  renderAll();
+  toast(editMode?'Edit saved list — remove items':'Saved list locked');
+}
+
+function toggleMeasure(){showMeasure=!showMeasure;document.getElementById('measureBtn').classList.toggle('active',showMeasure);document.getElementById('measureBtn').textContent=showMeasure?'📏 ON':'📏 Measurements';renderAll()}
+
+function toggleRuler(){rulerMode=!rulerMode;document.getElementById('rulerBtn').classList.toggle('active',rulerMode);document.getElementById('rulerBtn').textContent=rulerMode?'📐 ON':'📐 Ruler';if(!rulerMode){rulerStart=null;rulerEnd=null;rulerActive=false;}renderAll()}
+
+
+
+// ===== DRAG =====
+
+let dragEl=null;
+
+function getPos(e,c,s){if(e.touches)e=e.touches[0];const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)/s,y:(e.clientY-r.top)/s}}
+
+function startDrag(e,id,c,s){
+
+   if(rulerMode)return;
+
+   selectedId=id;activeContainer=c;activeScale=s;
+
+   dragging=cl().furniture.find(f=>f.id===id);
+
+   if(!dragging)return;
+
+   const p=getPos(e,c,s);
+
+   dragOff={x:p.x-dragging.x,y:p.y-dragging.y};
+
+   // Find the DOM element directly — do NOT call renderAll() during drag
+
+   dragEl=c.querySelector('.furniture[data-id="'+id+'"]');
+
+   if(dragEl){
+
+     dragEl.classList.add('selected','dragging');
+
+     // Deselect any other selected furniture
+
+     c.querySelectorAll('.furniture.selected').forEach(el=>{if(el!==dragEl)el.classList.remove('selected');});
+
+   }
+
+}
+
+function onMove(e){
+
+   if(rulerActive&&rulerMode&&activeContainer){
+
+     const p=getPos(e,activeContainer,activeScale);const R=rd();
+
+     rulerEnd={x:clamp(p.x,0,R.w),y:clamp(p.y,0,R.h)};
+
+     if(activeContainer._svg)renderOverlay(activeContainer._svg,activeContainer._f||cl().furniture,activeScale,R);return;
+
+   }
+
+   if(!dragging||!dragEl)return;e.preventDefault();
+
+   const R=rd(),p=getPos(e,activeContainer,activeScale);
+
+   dragging.x=clamp(p.x-dragOff.x,0,R.w-dragging.w);
+
+   dragging.y=clamp(p.y-dragOff.y,0,R.h-dragging.h);
+
+   // Update DOM position directly — no renderAll() during drag
+
+   dragEl.style.left=dragging.x*activeScale+'px';
+
+   dragEl.style.top=dragging.y*activeScale+'px';
+
+   // Update overlap highlight
+
+   const fArr=cl().furniture;
+
+   if(checkOverlap(dragging,fArr,R)){dragEl.classList.add('overlapping');}
+
+   else{dragEl.classList.remove('overlapping');}
+
+   // Update measurement overlay if active
+
+   if(showMeasure&&activeContainer._svg){
+
+     renderOverlay(activeContainer._svg,fArr,activeScale,R);
+
+   }
+
+}
+
+function endDrag(){
+
+   if(rulerActive){rulerActive=false;return;}
+
+   if(dragging){dragging=null;dragEl=null;saveToStorage();renderAll();}
+
+}
+
+
+
+// ===== EVENTS =====
+
+document.addEventListener('mousemove',onMove);
+
+document.addEventListener('mouseup',endDrag);
+
+document.addEventListener('touchmove',onMove,{passive:false});
+
+document.addEventListener('touchend',endDrag);
+
+document.addEventListener('keydown',e=>{
+
+   if(e.target.tagName==='INPUT')return;
+
+   const R=rd(),f=cl().furniture.find(f=>f.id===selectedId);
+
+   switch(e.key){
+
+     case'r':case'R':rotateSelected();break;
+
+     case'Delete':case'Backspace':if(f){e.preventDefault();deleteSelected();}break;
+
+     case'm':case'M':toggleMeasure();break;
+
+     case'z':case'Z':if(e.ctrlKey&&e.shiftKey){e.preventDefault();redo();}else if(e.ctrlKey){e.preventDefault();undo();}break;
+
+    case'y':case'Y':if(e.ctrlKey){e.preventDefault();redo();}break;
+
+    case'Escape':if(rulerMode)toggleRuler();else if(compareMode){compareMode=false;saveToStorage();renderAll();}else{selectedId=null;saveToStorage();renderAll();}break;
+
+     case'ArrowLeft':if(f){f.x=Math.max(0,f.x-1);saveToStorage();renderAll();}break;
+
+     case'ArrowRight':if(f){f.x=Math.min(R.w-f.w,f.x+1);saveToStorage();renderAll();}break;
+
+     case'ArrowUp':if(f){f.y=Math.max(0,f.y-1);saveToStorage();renderAll();}break;
+
+     case'ArrowDown':if(f){f.y=Math.min(R.h-f.h,f.y+1);saveToStorage();renderAll();}break;
+
+   }
+
+});
+
+window.addEventListener('resize',()=>renderAll());
+
+
+
+// ===== INIT =====
+
+// Try to load from localStorage first; if no saved data, try URL hash
+
+if(!loadFromStorage()){
+
+  loadUrl();
+
+}
+
+saveToStorage();renderAll();
+
+</script>
+
+</body>
+
+</html>
+<!-- deploy-marker-main-1794152402 -->
